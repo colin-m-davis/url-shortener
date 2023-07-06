@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, UpdateCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 
+// generate a new shortened URL
 export async function generate(event) {
     const json = JSON.parse(event.body);
     const userUrl = json.userUrl;
@@ -33,26 +34,28 @@ export async function generate(event) {
     };
 }
 
+// go to a previously generated shortened URL
 export async function go(event) {
     const pathChunks = event.path.split("/");
     const id = pathChunks[2];
 
     const client = new DynamoDBClient({});
     const docClient = DynamoDBDocumentClient.from(client);
-    
+
     const command = new GetCommand({
         TableName: process.env.TABLE_NAME,
         Key: {
-            id: id,
-        }
+            'id': id,
+        },
+        ProjectionExpression: 'user_url',
     });
 
-    const response = docClient.send(command);
-    const destination = response.Item;
+    const response = await docClient.send(command);
+    const destination = response.Item.user_url;
     return {
         statusCode: 302,
         headers: {
-            Location: 'https://google.com',
+            Location: destination,
         }
     }
 }

@@ -54,7 +54,7 @@ export class UrlShortenerStack extends cdk.Stack {
     const goResource = goBaseResource.addResource('{id}');
     const goIntegration = new apigateway.LambdaIntegration(goLambda, {
       requestTemplates: { "application/json": '{ "statusCode": "200" }' }
-    })
+    });
     goResource.addMethod("GET", goIntegration);
   }
 }
