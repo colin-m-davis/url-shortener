@@ -1,14 +1,7 @@
-# Welcome to your CDK TypeScript project
+# URL Shortener
 
-This is a blank project for CDK development with TypeScript.
+By sending a POST request to the `` endpoint with a URL string, the app responds with a newly generated id `id` that now links to the URL.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+When the user makes a GET request to the `/go/{id}` endpoint, the app redirects the user to the previously inputted URL.
 
-## Useful commands
-
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+This is a CDK app that deploys AWS API Gateway, Lambda, and DynamoDB resources.
