@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, UpdateCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 
 export async function generate(event) {
     const json = JSON.parse(event.body);
@@ -29,6 +29,30 @@ export async function generate(event) {
     console.log(response);
     return {
         statusCode: 200,
-        body:   partialHash
+        body: partialHash
     };
+}
+
+export async function go(event) {
+    const pathChunks = event.path.split("/");
+    const id = pathChunks[2];
+
+    const client = new DynamoDBClient({});
+    const docClient = DynamoDBDocumentClient.from(client);
+    
+    const command = new GetCommand({
+        TableName: process.env.TABLE_NAME,
+        Key: {
+            id: id,
+        }
+    });
+
+    const response = docClient.send(command);
+    const destination = response.Item;
+    return {
+        statusCode: 302,
+        headers: {
+            Location: 'https://google.com',
+        }
+    }
 }

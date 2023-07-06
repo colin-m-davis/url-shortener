@@ -24,19 +24,37 @@ export class UrlShortenerStack extends cdk.Stack {
       }
     });
 
-    table.grantReadWriteData(generateLambda);
+    const goLambda = new lambda.Function(this, 'go', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      code: lambda.Code.fromAsset('resources'),
+      handler: 'lambda.go',
+      environment: {
+        TABLE_NAME: table.tableName,
+      }
+    });
 
-    const api = new apigateway.RestApi(this, "widgets-api", {
+    table.grantWriteData(generateLambda);
+    table.grantReadData(goLambda);
+
+    const api = new apigateway.RestApi(this, "url-shortener-api", {
       restApiName: "URL Shortener Service",
-      description: "This service generates and serves shortened URLs."
+      description: "This service generates and serves shortened URLs.",
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigateway.Cors.ALL_ORIGINS
+      }
     });
 
     const generateResource = api.root.addResource('gen');
-
     const generateIntegration = new apigateway.LambdaIntegration(generateLambda, {
-      requestTemplates: { "application/json": '{ "statusCode": "200" }'}
+      requestTemplates: { "application/json": '{ "statusCode": "200" }' }
     });
-
     generateResource.addMethod("POST", generateIntegration);
+
+    const goBaseResource = api.root.addResource('go');
+    const goResource = goBaseResource.addResource('{id}');
+    const goIntegration = new apigateway.LambdaIntegration(goLambda, {
+      requestTemplates: { "application/json": '{ "statusCode": "200" }' }
+    })
+    goResource.addMethod("GET", goIntegration);
   }
 }
