@@ -2,15 +2,18 @@ import { createHash } from 'node:crypto';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, UpdateCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 
+function getId(s) {
+    const shaSum = createHash('sha256');
+    shaSum.update(userUrl);
+    const fullHash = shaSum.digest('hex');
+    return fullHash.slice(0, 8);
+}
+
 // generate a new shortened URL
 export async function generate(event) {
     const json = JSON.parse(event.body);
     const userUrl = json.userUrl;
-
-    const shaSum = createHash('sha256');
-    shaSum.update(userUrl);
-    const fullHash = shaSum.digest('hex');
-    const partialHash = fullHash.slice(0, 8);
+    const id = getId(userUrl);
 
     const client = new DynamoDBClient({});
     const docClient = DynamoDBDocumentClient.from(client);
@@ -18,7 +21,7 @@ export async function generate(event) {
     const command = new UpdateCommand({
         TableName: process.env.TABLE_NAME,
         Key: {
-            id: partialHash,
+            id: id,
         },
         UpdateExpression: 'SET user_url = :user_url',
         ExpressionAttributeValues: {
@@ -30,7 +33,7 @@ export async function generate(event) {
     console.log(response);
     return {
         statusCode: 200,
-        body: partialHash
+        body: id
     };
 }
 
