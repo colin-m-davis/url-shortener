@@ -4,7 +4,7 @@ import { DynamoDBDocumentClient, UpdateCommand, GetCommand } from "@aws-sdk/lib-
 
 function getId(s) {
     const shaSum = createHash('sha256');
-    shaSum.update(userUrl);
+    shaSum.update(s);
     const fullHash = shaSum.digest('hex');
     return fullHash.slice(0, 8);
 }
