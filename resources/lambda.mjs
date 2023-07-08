@@ -5,8 +5,8 @@ import { DynamoDBDocumentClient, UpdateCommand, GetCommand } from "@aws-sdk/lib-
 function getId(s) {
     const shaSum = createHash('sha256');
     shaSum.update(s);
-    const fullHash = shaSum.digest('hex');
-    return fullHash.slice(0, 8);
+    const hash = shaSum.digest('hex');
+    return hash.slice(0, 8);
 }
 
 // generate a new shortened URL
@@ -40,7 +40,7 @@ export async function generate(event) {
 // go to a previously generated shortened URL
 export async function go(event) {
     const pathChunks = event.path.split("/");
-    const id = pathChunks[2];
+    const id = pathChunks[2];  // get last part of path
 
     const client = new DynamoDBClient({});
     const docClient = DynamoDBDocumentClient.from(client);
